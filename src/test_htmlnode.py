@@ -24,6 +24,14 @@ class TestHtmlNode(unittest.TestCase):
         expected_output = '<p id="main" display="block">This is an awesome paragraph</p>'
         actual_output = str(html_node)
         self.assertEqual(expected_output, actual_output)
+        children = [
+            HtmlNode("div", "Hello", None, {"class": "something"}),
+            HtmlNode("a", "Home", None, {"href": "/landing"})    
+        ]
+        html_node2 = HtmlNode("p", None, children, {"id": "main", "display": "block"})
+        expected_output = '<p id="main" display="block"><div class="something">Hello</div><a href="/landing">Home</a></p>'
+        actual_output = str(html_node2)
+        self.assertEqual(expected_output, actual_output)
     
     def test_init(self):
         try:

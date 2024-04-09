@@ -28,11 +28,13 @@ class HtmlNode:
     def __repr__(self):
         opening_tag = f"<{self.tag}" if self.tag != None else ""
         closing_tag = f"</{self.tag}>" if self.tag != None else ""
-
+        children_html = ""
         opening_tag += self.props_to_html() + ">"
+        if self.children != None:
+            for child in self.children:
+                children_html += child.__repr__()
 
-        return opening_tag + self.value + closing_tag
+        return f"{opening_tag}{children_html}{self.value if self.value != None else ""}{closing_tag}"
     
-html_node2 = HtmlNode("a", "link", None, {"href": "https://www.something.com"})
-html_node2.props_to_html()
+
 
