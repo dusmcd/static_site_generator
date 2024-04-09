@@ -24,3 +24,22 @@ class HtmlNode:
     
 
 
+class LeafNode(HtmlNode):
+    def __init__(self, value, tag=None, props=None):
+        if value == None:
+            raise ValueError("Value must be supplied")
+        if props != None and tag == None:
+            raise Exception("Cannot have props without a tag")
+        super().__init__(tag, value, None, props)
+    
+    def to_html(self):
+        if self.tag == None:
+            return self.value
+        opening_tag = f"<{self.tag}{self.props_to_html()}>"
+        closing_tag = f"</{self.tag}>"
+
+        return opening_tag + self.value + closing_tag
+
+
+
+        
