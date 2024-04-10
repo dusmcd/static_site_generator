@@ -40,6 +40,9 @@ class LeafNode(HtmlNode):
 
         return opening_tag + self.value + closing_tag
     
+    def __repr__(self):
+        return f"LeafNode({self.value}, {self.tag}, {self.props})"
+    
 
 class ParentNode(HtmlNode):
     def __init__(self, tag, children, props=None):
@@ -59,6 +62,9 @@ class ParentNode(HtmlNode):
             body += child.to_html()
 
         return opening_tag + body + closing_tag
+    
+    def __repr__(self):
+        return f"ParentNode({self.tag}, {self.children}, {self.props})"
 
 
 
