@@ -36,6 +36,7 @@ old_nodes = {
         TextNode("Linke", TextType.LINK), 
         TextNode("I am a man.", TextType.TEXT)
         ],
+    "test9": [TextNode("`function getName(name) {console.log('My name is ' + name)}` Wow! That was a lot of code!", TextType.TEXT)]
 }
 
 test_cases_split = [
@@ -66,7 +67,12 @@ test_cases_split = [
          TextNode("const foo = 'bar'", TextType.CODE),
          TextNode("Doesn't matter", TextType.IMAGE),
          TextNode("Linke", TextType.LINK),
-         TextNode("I am a man.", TextType.TEXT)])
+         TextNode("I am a man.", TextType.TEXT)]),
+    (split_nodes_delimiter(old_nodes["test9"], "`", TextType.CODE),
+     [TextNode("function getName(name) {console.log('My name is ' + name)}", TextType.CODE),
+      TextNode(" Wow! That was a lot of code!", TextType.TEXT)
+      ]) 
+
 ]
 
 class TestTextNode(unittest.TestCase):
