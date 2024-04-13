@@ -1,6 +1,6 @@
 import unittest
 
-from textnode import TextNode, TextType, split_nodes_delimiter
+from textnode import TextNode, TextType, split_nodes_delimiter, split_nodes_images
 
 test_cases_eq = [
     (TextNode("Text Node", "bold"), TextNode("Text Node", "bold")),
@@ -75,6 +75,55 @@ test_cases_split = [
 
 ]
 
+old_nodes_imgs = {
+    "test1": [TextNode("This is text with an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" and ![another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)", TextType.TEXT)],
+    "test2": [TextNode("![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" This is text with an and ![another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)", TextType.TEXT)],
+    "test3": [TextNode("This is text with an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" and ![another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png) and here is some more text", TextType.TEXT)],
+    "test4": [
+        TextNode("This is text with an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" and ![another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)", TextType.TEXT),
+        TextNode("This is some **bold** text", TextType.TEXT),
+        TextNode("Regular text", TextType.TEXT)
+            ],
+
+}
+test_cases_images = [
+    (split_nodes_images(old_nodes_imgs["test1"]),
+      [TextNode("This is text with an ", TextType.TEXT),
+       TextNode("image", TextType.IMAGE, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+       TextNode(" and ", TextType.TEXT),
+       TextNode("another", TextType.IMAGE,"https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png")]),
+    (split_nodes_images(old_nodes_imgs["test2"]), 
+     [
+         TextNode("image", TextType.IMAGE, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+         TextNode(" This is text with an and ", TextType.TEXT),
+         TextNode("another", TextType.IMAGE, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png")
+     ]
+     ),
+     (split_nodes_images(old_nodes_imgs["test3"]),
+      [
+          TextNode("This is text with an ", TextType.TEXT),
+          TextNode("image", TextType.IMAGE, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+          TextNode(" and ", TextType.TEXT),
+          TextNode("another", TextType.IMAGE, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png"),
+          TextNode(" and here is some more text", TextType.TEXT)
+      ]
+      ),
+      (split_nodes_images(old_nodes_imgs["test4"]),
+      [
+       TextNode("This is text with an ", TextType.TEXT),
+       TextNode("image", TextType.IMAGE, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+       TextNode(" and ", TextType.TEXT),
+       TextNode("another", TextType.IMAGE,"https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png"),
+       TextNode("This is some **bold** text", TextType.TEXT),
+       TextNode("Regular text", TextType.TEXT) 
+      ] 
+       )
+
+]
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
         for test_case in test_cases_eq:
@@ -96,6 +145,7 @@ class TestTextNode(unittest.TestCase):
         except Exception as e:
             self.assertRaises(Exception)
             self.assertEqual(str(e), "Given type not recognized")
+
     def test_split_node_delimiter(self):
         for test_case in test_cases_split:
             for i in range(0, len(test_case[1])):
@@ -114,6 +164,13 @@ class TestTextNode(unittest.TestCase):
         except Exception as e:
             self.assertRaises(Exception)
             self.assertEqual(str(e), "Need a closing and an opening delimiter")
+
+    def test_split_node_images(self):
+        for test_case in test_cases_images:
+            for i in range(0, len(test_case[1])):
+                actual_result = str(test_case[0][i])
+                expected_result = str(test_case[1][i])
+                self.assertEqual(expected_result, actual_result)
 
 if __name__ == "main":
     unittest.main()
