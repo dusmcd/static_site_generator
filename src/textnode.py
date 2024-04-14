@@ -92,29 +92,31 @@ def get_delimiter_info(words, delimiter):
         raise Exception("Need a closing and an opening delimiter")
     return indices_with_delimiter
 
-def split_nodes_images(old_nodes):
-    new_nodes = []
-    for node in old_nodes:
-        images = extract_markdown_images(node.text)
-        if len(images) == 0:
-            new_nodes.append(node)
-        else:
-            new_nodes = split_text_and_images(node.text, images)
-    return new_nodes
+def split_images_links(extracter, parser, marker, text_type):
+    def splitter(old_nodes):
+        new_nodes = []
+        for node in old_nodes:
+            assets = extracter(node.text)
+            if len(assets) == 0:
+                new_nodes.append(node)
+            else:
+                new_nodes = parser(node.text, assets, marker, text_type)
+        return new_nodes
+    return splitter
 
-def split_text_and_images(text, images):
+def parser(text, assets, marker, text_type):
     updated_text = text
-    for image in images:
-        updated_text = updated_text.replace(f"![{image[0]}]({image[1]})", "![IMAGE]")
+    for asset in assets:
+        updated_text = updated_text.replace(f"{marker}[{asset[0]}]({asset[1]})", "![asset]")
     words = updated_text.split()
     new_nodes = []
     text_block = ""
     j = 0
     for i in range(0, len(words)):
-        if words[i] == "![IMAGE]":
+        if words[i] == "![asset]":
             new_nodes.append(TextNode(text_block + " ", TextType.TEXT)) if len(text_block) > 0 else None
             text_block = ""
-            new_nodes.append(TextNode(images[j][0], TextType.IMAGE, images[j][1]))
+            new_nodes.append(TextNode(assets[j][0], text_type, assets[j][1]))
             j += 1
         elif i == len(words) - 1:
             text_block += " " + words[i]
@@ -122,4 +124,7 @@ def split_text_and_images(text, images):
         else:
             text_block += words[i] if i == 0 else " " + words[i] 
     return new_nodes
+
+split_nodes_images = split_images_links(extract_markdown_images, parser, "!", TextType.IMAGE)
+split_nodes_links = split_images_links(extract_markdown_links, parser, "", TextType.LINK)
 

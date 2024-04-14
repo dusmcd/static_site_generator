@@ -1,6 +1,6 @@
 import unittest
 
-from textnode import TextNode, TextType, split_nodes_delimiter, split_nodes_images
+from textnode import TextNode, TextType, split_nodes_delimiter, split_nodes_images, split_nodes_links
 
 test_cases_eq = [
     (TextNode("Text Node", "bold"), TextNode("Text Node", "bold")),
@@ -124,6 +124,56 @@ test_cases_images = [
        )
 
 ]
+old_nodes_links = {
+    "test1": [TextNode("This is text with an [image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" and [another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)", TextType.TEXT)],
+    "test2": [TextNode("[image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" This is text with an and [another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)", TextType.TEXT)],
+    "test3": [TextNode("This is text with an [image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" and [another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png) and here is some more text", TextType.TEXT)],
+    "test4": [
+        TextNode("This is text with an [image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png)" +
+" and [another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)", TextType.TEXT),
+        TextNode("This is some **bold** text", TextType.TEXT),
+        TextNode("Regular text", TextType.TEXT)
+            ],
+
+}
+test_cases_links = [
+    (split_nodes_links(old_nodes_links["test1"]),
+      [TextNode("This is text with an ", TextType.TEXT),
+       TextNode("image", TextType.LINK, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+       TextNode(" and ", TextType.TEXT),
+       TextNode("another", TextType.LINK,"https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png")]),
+    (split_nodes_links(old_nodes_links["test2"]), 
+     [
+         TextNode("image", TextType.LINK, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+         TextNode(" This is text with an and ", TextType.TEXT),
+         TextNode("another", TextType.LINK, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png")
+     ]
+     ),
+     (split_nodes_links(old_nodes_links["test3"]),
+      [
+          TextNode("This is text with an ", TextType.TEXT),
+          TextNode("image", TextType.LINK, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+          TextNode(" and ", TextType.TEXT),
+          TextNode("another", TextType.LINK, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png"),
+          TextNode(" and here is some more text", TextType.TEXT)
+      ]
+      ),
+      (split_nodes_links(old_nodes_links["test4"]),
+      [
+       TextNode("This is text with an ", TextType.TEXT),
+       TextNode("image", TextType.LINK, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+       TextNode(" and ", TextType.TEXT),
+       TextNode("another", TextType.LINK,"https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png"),
+       TextNode("This is some **bold** text", TextType.TEXT),
+       TextNode("Regular text", TextType.TEXT) 
+      ] 
+       )
+
+]
+
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
         for test_case in test_cases_eq:
@@ -167,6 +217,13 @@ class TestTextNode(unittest.TestCase):
 
     def test_split_node_images(self):
         for test_case in test_cases_images:
+            for i in range(0, len(test_case[1])):
+                actual_result = str(test_case[0][i])
+                expected_result = str(test_case[1][i])
+                self.assertEqual(expected_result, actual_result)
+    
+    def test_split_nodes_links(self):
+        for test_case in test_cases_links:
             for i in range(0, len(test_case[1])):
                 actual_result = str(test_case[0][i])
                 expected_result = str(test_case[1][i])
