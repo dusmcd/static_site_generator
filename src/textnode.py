@@ -100,31 +100,34 @@ def split_images_links(extracter, parser, marker, text_type):
             if len(assets) == 0:
                 new_nodes.append(node)
             else:
-                new_nodes = parser(node.text, assets, marker, text_type)
+                new_nodes.extend(parser(node.text, assets, marker, text_type))
         return new_nodes
     return splitter
 
+
 def parser(text, assets, marker, text_type):
-    updated_text = text
-    for asset in assets:
-        updated_text = updated_text.replace(f"{marker}[{asset[0]}]({asset[1]})", "![asset]")
-    words = updated_text.split()
     new_nodes = []
-    text_block = ""
-    j = 0
-    for i in range(0, len(words)):
-        if words[i] == "![asset]":
-            new_nodes.append(TextNode(text_block + " ", TextType.TEXT)) if len(text_block) > 0 else None
-            text_block = ""
-            new_nodes.append(TextNode(assets[j][0], text_type, assets[j][1]))
-            j += 1
-        elif i == len(words) - 1:
-            text_block += " " + words[i]
-            new_nodes.append(TextNode(text_block, TextType.TEXT))
+    current_text = text
+    for asset in assets:
+        sections = current_text.split(f"{marker}[{asset[0]}]({asset[1]})")
+        if len(sections[0]) == 0:
+            new_nodes.append(TextNode(asset[0], text_type, asset[1]))
         else:
-            text_block += words[i] if i == 0 else " " + words[i] 
+            new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            new_nodes.append(TextNode(asset[0], text_type, asset[1]))
+        current_text = sections[1]
+    if len(current_text) > 0:
+        new_nodes.append(TextNode(current_text, TextType.TEXT))
     return new_nodes
 
 split_nodes_images = split_images_links(extract_markdown_images, parser, "!", TextType.IMAGE)
 split_nodes_links = split_images_links(extract_markdown_links, parser, "", TextType.LINK)
 
+def text_to_text_nodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_images(nodes)
+    nodes = split_nodes_links(nodes)
+    return nodes
