@@ -22,42 +22,19 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
     return new_nodes
 
 def split_text(text, delimiter, text_type):
-    words = text.split()
-    indices_with_delimiter = get_delimiter_info(words, delimiter)
+    sections = text.split(delimiter)
     new_nodes = []
-    sections = filter(lambda section : len(section) > 0, text.split(delimiter))
-    word_count = -1
-    j = 0
-    for section in sections:
-        word_count += len(section.split())
-        if j >= len(indices_with_delimiter):
-            new_nodes.append(TextNode(section, TextType.TEXT))
-        elif word_count < indices_with_delimiter[j]:
-            new_nodes.append(TextNode(section, TextType.TEXT))
-        elif word_count >= indices_with_delimiter[j]:
-            new_nodes.append(TextNode(section, text_type))
-            j += 1
-        
-
+    if len(sections) % 2 == 0:
+        raise Exception("Need a closing and an opening delimiter")
+    for i in range(0, len(sections)):
+        if len(sections[i]) == 0:
+            continue
+        if not i % 2 == 0:
+            new_nodes.append(TextNode(sections[i], text_type))
+        else:
+            new_nodes.append(TextNode(sections[i], TextType.TEXT))
     return new_nodes
 
-def get_delimiter_info(words, delimiter):
-    indices_with_delimiter = []
-    delimiter_check = 0
-    for i in range(0, len(words)):
-        if delimiter in words[i][0:2] and delimiter in words[i][len(words[i]) - 2:]:
-            indices_with_delimiter.append(i)
-            delimiter_check = 0
-        elif delimiter in words[i][0:2]:
-            indices_with_delimiter.append(i)
-            delimiter_check += 1
-        elif delimiter in words[i][len(words[i]) - 2:]:
-            delimiter_check -= 1
-
-    
-    if delimiter_check != 0:
-        raise Exception("Need a closing and an opening delimiter")
-    return indices_with_delimiter
 
 def split_images_links(extracter, parser, marker, text_type):
     def splitter(old_nodes):

@@ -7,11 +7,10 @@ def markdown_to_html(markdown):
     blocks_and_types = map(lambda block : {"type": get_block_type(block), "text": block}, blocks)
     html_parent_nodes = []
     for block in blocks_and_types:
-        text_nodes = text_to_text_nodes(block["text"])
         if block["type"] == BlockType.PARAGRAPH:
-            html_parent_nodes.append(convert_paragraphs(text_nodes))
+            html_parent_nodes.append(convert_paragraphs(block))
         elif block["type"] == BlockType.HEADING:
-            html_parent_nodes.append(convert_headings(text_nodes))
+            html_parent_nodes.append(convert_headings(block))
         elif block["type"] == BlockType.UNORDERED_LIST:
             html_parent_nodes.append(convert_unordered_lists(block))
         elif block["type"] == BlockType.ORDERED_LIST:
@@ -27,13 +26,15 @@ def markdown_to_html(markdown):
     return f"<div>{html_body}</div>"
 
 
-def convert_paragraphs(text_nodes):
+def convert_paragraphs(block):
+    text_nodes = text_to_text_nodes(block["text"])
     children = []
     for node in text_nodes:
         children.append(node.text_node_to_html_node())
     return ParentNode("p", children)
 
-def convert_headings(text_nodes):
+def convert_headings(block):
+    text_nodes = text_to_text_nodes(block["text"])
     children = []
     header_type = text_nodes[0].text.find(" ")
     first_node_text = text_nodes[0].text.lstrip("# ")
@@ -46,7 +47,7 @@ def convert_unordered_lists(block):
     lines = block["text"].split("\n")
     children = []
     for line in lines:
-        line = line.lstrip("* - ")
+        line = line.lstrip("* ") if line.startswith("*") else line.lstrip("- ")
         list_items_html_nodes = map(lambda node : node.text_node_to_html_node(), text_to_text_nodes(line))
         children.append(ParentNode("li", list_items_html_nodes))
     return ParentNode("ul", children)
