@@ -3,7 +3,7 @@ from markdown_html import markdown_to_html
 
 def main():
     copy_static_files("./static", "./public")
-    generate_page("./content/index.md", "./template.html", "./public/index.html")
+    generate_pages_recursively("./content", "./template.html", "./public")
 
 def copy_static_files(src, dest):
     if dest == "./public":
@@ -47,8 +47,22 @@ def generate_page(from_path, template_path, dest_path):
         new_file = open(dest_path, "w")
         new_file.write(result)
     except Exception as e:
-        print("Invalid markdown")
         print(e)
+
+def generate_pages_recursively(src, template, dest):
+    if not os.path.exists(dest):
+        os.mkdir(dest)
+    path_items = os.listdir(src)
+    for item in path_items:
+        item_path = os.path.join(src, item)
+        if os.path.isfile(item_path):
+            new_file = item.rstrip(".md") + ".html"
+            dest_path = os.path.join(dest, new_file)
+            generate_page(item_path, template, dest_path)
+        else:
+            updated_src = item_path
+            updated_dest = os.path.join(dest, item)
+            generate_pages_recursively(updated_src, template, updated_dest)
 
 if __name__ == "__main__":
     main()
